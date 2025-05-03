@@ -1,0 +1,28 @@
+name: Docker Volume Cleanup Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check Docker version
+      run: docker --version
+
+    - name: Create and remove container with a volume
+      run: |
+        docker volume create my_temp_volume
+        docker run --name temp_container -v my_temp_volume:/data alpine echo "hello"
+        docker rm temp_container
+
+    - name: List existing volumes
+      run: docker volume ls
+
+    - name: Try to remove volume manually
+      run: docker volume rm my_temp_volume || echo "Volume is in use or already deleted"
+
+    - name: Remove all unused volumes
+      run: docker volume prune -f
